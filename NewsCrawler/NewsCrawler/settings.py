@@ -14,6 +14,8 @@ BOT_NAME = 'NewsCrawler'
 SPIDER_MODULES = ['NewsCrawler.spiders']
 NEWSPIDER_MODULE = 'NewsCrawler.spiders'
 
+LOG_LEVEL = 'INFO'
+
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'NewsCrawler (+http://www.yourdomain.com)'
@@ -46,9 +48,9 @@ COOKIES_ENABLED = False
 
 # Enable or disable spider middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/spider-middleware.html
-#SPIDER_MIDDLEWARES = {
-#    'NewsCrawler.middlewares.MyCustomSpiderMiddleware': 543,
-#}
+SPIDER_MIDDLEWARES = {
+   'NewsCrawler.middlewares.NewsCrawlerCustomMiddleware.IgnoreVisitedItems': 543,
+}
 
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
@@ -64,9 +66,9 @@ COOKIES_ENABLED = False
 
 # Configure item pipelines
 # See http://scrapy.readthedocs.org/en/latest/topics/item-pipeline.html
-#ITEM_PIPELINES = {
-#    'NewsCrawler.pipelines.SomePipeline': 300,
-#}
+ITEM_PIPELINES = {
+   'NewsCrawler.pipelines.NewscrawlerPipeline': 300,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See http://doc.scrapy.org/en/latest/topics/autothrottle.html

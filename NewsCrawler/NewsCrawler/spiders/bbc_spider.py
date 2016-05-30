@@ -1,6 +1,7 @@
 from scrapy.spiders import CrawlSpider, Rule
 from NewsCrawler.items import NewsCrawlerItem
-from scrapy.linkextractors.sgml import SgmlLinkExtractor
+from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
+import logging
 
 
 class BBCSpider(CrawlSpider):
@@ -11,21 +12,28 @@ class BBCSpider(CrawlSpider):
     ]
 
     rules = [
-        Rule(SgmlLinkExtractor(allow=(r'\/news\/(?:[A-Za-z0-9]+-?)+\-(?:[0-9]+)',)), callback='parse_article', follow=True)
+        Rule(LxmlLinkExtractor(
+            allow=(r'\/news\/(?:[A-Za-z0-9]+-?)+\-(?:[0-9]+)',),
+            restrict_xpaths='//*[@id="page"]',
+            deny=r'\/news\/help\-(?:[0-9]+)'),
+            callback='parse_article',
+            follow=True)
     ]
 
     def parse_article(self, response):
+        logging.log(logging.INFO, "Crawling: %s" % response.url)
         story = response.css('.story-body')
         item = NewsCrawlerItem()
-        if story:
-            if story.css('.story-body__h1'):
-                item['title'] = story.css('.story-body__h1::text').extract_first()
-                item['type'] = 'Full'
-                item['section'] = story.css('.mini-info-list__section::text').extract_first()
-                item['content'] = story.css('p::text').extract()
-                item['images'] = story.css('img').extract()
-                item['related'] = story.css('.story-body__link').extract()
-                item['date'] = story.css('.date::attr(data-seconds)').extract_first()
 
-            item['url'] = response.url
+        item['source'] = 'BBC'
+        item['title'] = story.css('.story-body__h1::text').extract_first()
+        item['excerpt'] = story.css('.story-body__introduction::text').extract_first()
+        item['section'] = story.css('.mini-info-list__section::text').extract_first()
+        item['content'] = story.css('p::text').extract()
+        images = [img for img in story.css('figure').xpath('span/img|span/div[1]').xpath('@alt|@data-alt').extract()]
+        item['images'] = [{"src": img, 'alt': images[i]} for i, img in enumerate(story.css('figure').xpath('span/img|span/div[1]').xpath('@src|@data-src').extract())]
+        item['related'] = [{'text': link.xpath('text()').extract_first(), 'url': link.xpath('@href').extract_first()} for link in story.css('.story-body__link')]
+        item['date'] = story.css('.date::attr(data-seconds)').extract_first()
+        item['url'] = response.url
+
         yield item

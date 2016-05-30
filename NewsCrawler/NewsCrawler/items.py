@@ -9,13 +9,14 @@ import scrapy
 
 
 class NewsCrawlerItem(scrapy.Item):
+    visit_id = scrapy.Field()
+    visit_status = scrapy.Field()
+    source = scrapy.Field()
     title = scrapy.Field()
     excerpt = scrapy.Field()
     url = scrapy.Field()
-    type = scrapy.Field()
     section = scrapy.Field()
     content = scrapy.Field()
     images = scrapy.Field()
     related = scrapy.Field()
     date = scrapy.Field()
-
