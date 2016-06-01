@@ -20,3 +20,6 @@ class NewsCrawlerItem(scrapy.Item):
     images = scrapy.Field()
     related = scrapy.Field()
     date = scrapy.Field()
+
+    def __repr__(self):
+        return repr({'url': self['url']})

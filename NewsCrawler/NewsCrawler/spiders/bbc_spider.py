@@ -1,7 +1,10 @@
-from scrapy.spiders import CrawlSpider, Rule
-from NewsCrawler.items import NewsCrawlerItem
-from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
+import datetime
 import logging
+
+from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
+from scrapy.spiders import CrawlSpider, Rule
+
+from NewsCrawler.items import NewsCrawlerItem
 
 
 class BBCSpider(CrawlSpider):
@@ -25,7 +28,7 @@ class BBCSpider(CrawlSpider):
         story = response.css('.story-body')
         item = NewsCrawlerItem()
 
-        item['source'] = 'BBC'
+        item['source'] = self.name
         item['title'] = story.css('.story-body__h1::text').extract_first()
         item['excerpt'] = story.css('.story-body__introduction::text').extract_first()
         item['section'] = story.css('.mini-info-list__section::text').extract_first()
@@ -33,7 +36,7 @@ class BBCSpider(CrawlSpider):
         images = [img for img in story.css('figure').xpath('span/img|span/div[1]').xpath('@alt|@data-alt').extract()]
         item['images'] = [{"src": img, 'alt': images[i]} for i, img in enumerate(story.css('figure').xpath('span/img|span/div[1]').xpath('@src|@data-src').extract())]
         item['related'] = [{'text': link.xpath('text()').extract_first(), 'url': link.xpath('@href').extract_first()} for link in story.css('.story-body__link')]
-        item['date'] = story.css('.date::attr(data-seconds)').extract_first()
+        item['date'] = datetime.datetime.fromtimestamp(int(story.css('.date::attr(data-seconds)').extract_first()))
         item['url'] = response.url
 
         yield item
