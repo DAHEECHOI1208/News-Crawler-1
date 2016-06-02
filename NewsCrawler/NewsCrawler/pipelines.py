@@ -3,7 +3,9 @@ from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize import RegexpTokenizer
 from collections import Counter
-import pymongo, datetime
+import pymongo
+import datetime
+import logging
 
 
 class NewsCrawlerPipeline(object):
@@ -34,6 +36,7 @@ class NewsCrawlerPipeline(object):
     def process_item(self, item, spider):
         if item['title']:
             if self.db['documents'].find({'url': item['url']}).count() == 0:
+                logging.log(logging.INFO, "Storing into the database %s" % item['url'])
                 tokens = []
                 for paragraph in item['content']:
                     tokens += self.tokenize_and_stem(paragraph)
@@ -70,6 +73,7 @@ class NewsCrawlerPipeline(object):
                 for result in results:
                     bulk.insert({'document_id': document_id, 'term_id': result['_id'], 'freq': tf[result['term']]})
                 bulk.execute()
+                logging.log(logging.INFO, "Stored into the database %s" % item['url'])
                 return item
             else:
                 raise DropItem("This page has been crawled and processed %s" % item['title'])

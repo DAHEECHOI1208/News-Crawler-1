@@ -45,7 +45,6 @@ class CNNSpider(CrawlSpider):
         clean = u''
         while end >= 0:
             end = text.find('&lt;', start + 1, len(text))
-            # print start, end if end >= 0 else len(text)
             clean += text[start:end if end >= 0 else len(text)]
             start = text.find('&gt;', start + 1, len(text)) + 4
         return clean.replace("&#39;", "'")
