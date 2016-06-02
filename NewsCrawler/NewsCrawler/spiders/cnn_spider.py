@@ -1,7 +1,8 @@
 import logging
+import datetime
 from dateutil import parser as date_parser
 
-from scrapy.linkextractors.sgml import SgmlLinkExtractor
+from scrapy.linkextractors.lxmlhtml import LxmlLinkExtractor
 from scrapy.spiders import CrawlSpider, Rule
 
 from NewsCrawler.items import NewsCrawlerItem
@@ -15,7 +16,7 @@ class CNNSpider(CrawlSpider):
     ]
 
     rules = [
-        Rule(SgmlLinkExtractor(
+        Rule(LxmlLinkExtractor(
             allow=r'\/[0-9]{4}\/[0-9]{2}\/[0-9]{2}\/(.+)\/index.html?.+'),
             callback='parse_article',
             follow=True)
@@ -34,7 +35,10 @@ class CNNSpider(CrawlSpider):
             item['content'] = story.css('.l-container .zn-body__paragraph').xpath('text()').extract()
             item['images'] = [{"src": img.xpath('@data-src-medium').extract_first(), 'alt': self.clean_alt(img.xpath('@alt').extract_first())} for img in story.css('img').xpath('(.)[boolean(@data-src-medium)]')]
             item['related'] = [{"text": link.xpath('text()').extract_first(), "url": link.xpath('@href').extract_first()} for link in story.css('a').xpath("(.)[starts-with(@href, 'http://edition.cnn.com/')]")]
-            item['date'] = date_parser.parse(story.css('meta:nth-child(4)::attr(content)').extract_first())
+            try:
+                item['date'] = date_parser.parse(story.css('meta:nth-child(4)::attr(content)').extract_first())
+            except StandardError:
+                item['date'] = datetime.datetime.utcnow()
         item['url'] = response.url
 
         yield item

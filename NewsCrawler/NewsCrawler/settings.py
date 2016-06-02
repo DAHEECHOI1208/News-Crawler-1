@@ -16,7 +16,6 @@ NEWSPIDER_MODULE = 'NewsCrawler.spiders'
 
 
 LOG_LEVEL = 'DEBUG'
-LOG_FILE = '../crawler.log'
 LOG_ENABLED = True
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
