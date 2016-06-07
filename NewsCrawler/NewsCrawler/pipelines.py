@@ -41,6 +41,7 @@ class NewsCrawlerPipeline(object):
                 for paragraph in item['content']:
                     tokens += self.tokenize_and_stem(paragraph)
                 tokens += self.tokenize_and_stem(item['title'])
+                document_length = len(tokens)
                 tf = Counter(tokens)
                 document_id = self.db['documents'].insert({
                     'source': item['source'],
@@ -51,6 +52,7 @@ class NewsCrawlerPipeline(object):
                     'images': item['images'],
                     'related': item['related'],
                     'date': item['date'],
+                    'length': document_length,
                     'crawled_at': datetime.datetime.utcnow()
                 })
                 bulk = self.db['dictionary'].initialize_unordered_bulk_op()
@@ -63,7 +65,8 @@ class NewsCrawlerPipeline(object):
                             'lastModified': True
                         },
                         '$inc': {
-                            'freq': tf[key]
+                            'freq': tf[key],
+                            'docs': 1,
                         }
                     })
                 bulk.execute()
